@@ -36,8 +36,9 @@ PAGES = {'fd': 'index.phtml', 'dl': 'downxls.php', 'jv': 'json_v2.php',
          'ssecq':'commonQuery.do'}
 TICK_COLUMNS = ['time', 'price', 'change', 'volume', 'amount', 'type']
 TODAY_TICK_COLUMNS = ['time', 'price', 'pchange', 'change', 'volume', 'amount', 'type']
-DAY_TRADING_COLUMNS = ['code', 'symbol', 'name', 'changepercent',
-                       'trade', 'open', 'high', 'low', 'settlement', 'volume', 'turnoverratio']
+DAY_TRADING_COLUMNS = ['symbol', 'changepercent',
+                       'trade', 'open', 'high', 'low', 'settlement', 
+                       'volume', 'amount', 'turnoverratio']
 REPORT_COLS = ['code', 'name', 'eps', 'eps_yoy', 'bvps', 'roe',
                'epcf', 'net_profits', 'profits_yoy', 'distrib', 'report_date']
 FORECAST_COLS = ['code', 'name', 'type', 'report_date', 'pre_eps', 'range']
@@ -97,8 +98,8 @@ SHIBOR_MA_COLS = ['date', 'ON_5', 'ON_10', 'ON_20', '1W_5', '1W_10', '1W_20','2W
                   '9M_5', '9M_10', '9M_20','1Y_5', '1Y_10', '1Y_20']
 LPR_COLS = ['date', '1Y']
 LPR_MA_COLS = ['date', '1Y_5', '1Y_10', '1Y_20']
-INDEX_HEADER = 'code,name,open,preclose,close,high,low,0,0,volume,amount,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,d,c,3\n'
-INDEX_COLS = ['code', 'name', 'change', 'preclose', 'close', 'high', 'low', 'volume', 'amount']
+INDEX_HEADER = 'id,name,open,preclose,close,high,low,0,0,volume,turnover,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,d,c,3\n'
+INDEX_COLS = ['id', 'change', 'open', 'preclose', 'close', 'high', 'low', 'volume', 'turnover']
 HIST_FQ_COLS = ['date', 'open', 'high', 'close', 'low', 'volume', 'amount', 'factor']
 HIST_FQ_FACTOR_COLS = ['code','value']
 DATA_GETTING_TIPS = '[Getting data:]'

@@ -119,9 +119,8 @@ def _parsing_dayprice_json(pageNum=1):
     else:
         jstr = json.dumps(text, encoding='GBK')
     js = json.loads(jstr)
-    df = pd.DataFrame(pd.read_json(js, dtype={'code':object}),
-                      columns=ct.DAY_TRADING_COLUMNS)
-    df = df.drop('symbol', axis=1)
+    df = pd.DataFrame(pd.read_json(js), columns=ct.DAY_TRADING_COLUMNS)
+    df.rename(columns={'trade':'close', 'symbol':'id', 'changepercent':'change', 'settlement':'preclose', 'amount':'turnover'}, inplace=True)
     df = df.ix[df.volume > 0]
     return df
 
@@ -503,18 +502,16 @@ def get_index():
                                              ct.DOMAINS['sinahq']))
     text = urlopen(request, timeout=10).read()
     text = text.decode('GBK')
-    text = text.replace('var hq_str_sh', '').replace('var hq_str_sz', '')
+    text = text.replace('var hq_str_', '')
     text = text.replace('";', '').replace('"', '').replace('=', ',')
     text = '%s%s'%(ct.INDEX_HEADER, text)
     df = pd.read_csv(StringIO(text), sep=',', thousands=',')
     df['change'] = (df['close'] / df['preclose'] - 1 ) * 100
-    df['amount'] = df['amount'] / 100000000
     df['change'] = df['change'].map(ct.FORMAT)
-    df['amount'] = df['amount'].map(ct.FORMAT)
+    df['turnover'] = df['turnover'].map(ct.FORMAT)
     df = df[ct.INDEX_COLS]
-    df['code'] = df['code'].map(lambda x:str(x).zfill(6))
     df['change'] = df['change'].astype(float)
-    df['amount'] = df['amount'].astype(float)
+    df['turnover'] = df['turnover'].astype(float)
     return df
  
 
