@@ -301,7 +301,7 @@ def get_realtime_quotes(symbols=None):
     text = text.decode('GBK')
     reg = re.compile(r'\="(.*?)\";')
     data = reg.findall(text)
-    regSym = re.compile(r'(?:sh|sz)(.*?)\=')
+    regSym = re.compile(r'((?:sh|sz).*?)\=')
     syms = regSym.findall(text)
     data_list = []
     syms_list = []
@@ -312,11 +312,18 @@ def get_realtime_quotes(symbols=None):
     if len(syms_list) == 0:
         return None
     df = pd.DataFrame(data_list, columns=ct.LIVE_DATA_COLS)
-    df = df.drop('s', axis=1)
-    df['code'] = syms_list
+    df['id'] = syms_list
+    df.drop(['s', 'name'], axis=1, inplace=True)
+    df = df[df.volume != '0']
     ls = [cls for cls in df.columns if '_v' in cls]
     for txt in ls:
-        df[txt] = df[txt].map(lambda x : x[:-2])
+        df[txt] = df[txt].astype(int)
+    ls = [cls for cls in df.columns if '_p' in cls]
+    for txt in ls:
+        df[txt] = df[txt].astype(float)
+    df[['open', 'preclose', 'current', 'high', 'low', 'bid', 'ask', 'turnover']] = \
+            df[['open', 'preclose', 'current', 'high', 'low', 'bid', 'ask', 'turnover']].astype(float)
+    df['volume'] = df['volume'].astype(int)
     return df
 
 
@@ -536,6 +543,9 @@ def _code_to_symbol(code):
     """
         生成symbol代码标志
     """
+    if code.startswith(('sh', 'sz')):
+        return code
+
     if code in ct.INDEX_LABELS:
         return ct.INDEX_LIST[code]
     else:

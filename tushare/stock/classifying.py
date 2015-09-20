@@ -11,6 +11,7 @@ Created on 2015/02/01
 import pandas as pd
 from tushare.stock import cons as ct
 from tushare.stock import ref_vars as rv
+from tushare.stock.trading import _code_to_symbol
 import json
 import re
 from pandas.util.testing import _network_error_classes
@@ -39,9 +40,11 @@ def get_industry_classified():
     ct._write_head()
     for row in df.values:
         rowDf =  _get_detail(row[0])
-        rowDf['c_name'] = row[1]
+        rowDf['industry'] = row[1]
         data.append(rowDf)
     data = pd.concat(data, ignore_index=True)
+    data.rename(columns={'code':'id'}, inplace=True)
+    data['id'] = data['id'].apply(_code_to_symbol)
     return data
         
 
@@ -140,8 +143,7 @@ def _get_detail(tag, retry_count=3, pause=0.001):
         try:
             ct._write_console()
             request = Request(ct.SINA_DATA_DETAIL_URL%(ct.P_TYPE['http'],
-                                                               ct.DOMAINS['vsf'], ct.PAGES['jv'],
-                                                               tag))
+                              ct.DOMAINS['vsf'], ct.PAGES['jv'], tag))
             text = urlopen(request, timeout=10).read()
             text = text.decode('gbk')
         except _network_error_classes:

@@ -39,27 +39,27 @@ TODAY_TICK_COLUMNS = ['time', 'price', 'pchange', 'change', 'volume', 'amount', 
 DAY_TRADING_COLUMNS = ['symbol', 'changepercent',
                        'trade', 'open', 'high', 'low', 'settlement', 
                        'volume', 'amount', 'turnoverratio']
-REPORT_COLS = ['code', 'name', 'eps', 'eps_yoy', 'bvps', 'roe',
+REPORT_COLS = ['id', 'name', 'eps', 'eps_yoy', 'bvps', 'roe',
                'epcf', 'net_profits', 'profits_yoy', 'distrib', 'report_date']
-FORECAST_COLS = ['code', 'name', 'type', 'report_date', 'pre_eps', 'range']
-PROFIT_COLS = ['code', 'name', 'roe', 'net_profit_ratio',
+FORECAST_COLS = ['id', 'name', 'type', 'report_date', 'pre_eps', 'range']
+PROFIT_COLS = ['id', 'name', 'roe', 'net_profit_ratio',
                'gross_profit_rate', 'net_profits', 'eps', 'business_income', 'bips']
-OPERATION_COLS = ['code', 'name', 'arturnover', 'arturndays', 'inventory_turnover',
+OPERATION_COLS = ['id', 'name', 'arturnover', 'arturndays', 'inventory_turnover',
                   'inventory_days', 'currentasset_turnover', 'currentasset_days']
-GROWTH_COLS = ['code', 'name', 'mbrg', 'nprg', 'nav', 'targ', 'epsg', 'seg']
-DEBTPAYING_COLS = ['code', 'name', 'currentratio',
+GROWTH_COLS = ['id', 'name', 'mbrg', 'nprg', 'nav', 'targ', 'epsg', 'seg']
+DEBTPAYING_COLS = ['id', 'name', 'currentratio',
                    'quickratio', 'cashratio', 'icratio', 'sheqratio', 'adratio']
-CASHFLOW_COLS = ['code', 'name', 'cf_sales', 'rateofreturn',
+CASHFLOW_COLS = ['id', 'name', 'cf_sales', 'rateofreturn',
                  'cf_nm', 'cf_liabilities', 'cashflowratio']
-DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change',
+DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'change',
                      'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20', 'turnover']
-INX_DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change',
+INX_DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'change',
                          'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']
-LIVE_DATA_COLS = ['name', 'open', 'pre_close', 'price', 'high', 'low', 'bid', 'ask', 'volume', 'amount',
+LIVE_DATA_COLS = ['name', 'open', 'preclose', 'current', 'high', 'low', 'bid', 'ask', 'volume', 'turnover',
                   'b1_v', 'b1_p', 'b2_v', 'b2_p', 'b3_v', 'b3_p', 'b4_v', 'b4_p', 'b5_v', 'b5_p',
                   'a1_v', 'a1_p', 'a2_v', 'a2_p', 'a3_v', 'a3_p', 'a4_v', 'a4_p', 'a5_v', 'a5_p', 'date', 'time', 's']
 FOR_CLASSIFY_B_COLS = ['code','name']
-FOR_CLASSIFY_W_COLS = ['date','code','weight']
+FOR_CLASSIFY_W_COLS = ['date','id','weight']
 THE_FIELDS = ['code','symbol','name','changepercent','trade','open','high','low','settlement','volume','turnoverratio']
 TICK_PRICE_URL = '%smarket.%s/%s?date=%s&symbol=%s'
 TODAY_TICKS_PAGE_URL = '%s%s/quotes_service/api/%s/CN_Transactions.getAllPageTime?date=%s&symbol=%s'

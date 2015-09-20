@@ -17,13 +17,22 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request
 
+
+NONE_REPLACEMENT = 'NaN'
+
+
+def normalize_id(code):
+    code = str(code).zfill(6)
+    return 'sh%s'%code if code[:1] in ['5,', '6'] else 'sz%s'%code
+
+
 def get_stock_basics():
     """
         获取沪深上市公司基本情况
     Return
     --------
     DataFrame
-               code,代码
+               id,代码
                name,名称
                industry,细分行业
                area,地区
@@ -48,6 +57,31 @@ def get_stock_basics():
     return df
 
 
+def get_finance_data(year, quarter):
+    report_data = get_report_data(year, quarter)
+    report_data.set_index('id', inplace=True)
+
+    profit_data = get_profit_data(year, quarter)
+    profit_data.drop(['roe', 'eps', 'net_profits'], axis=1, inplace=True)
+    profit_data.set_index('id', inplace=True)
+
+    operation_data = get_operation_data(year, quarter)
+    operation_data.set_index('id', inplace=True)
+
+    growth_data = get_growth_data(year, quarter)
+    growth_data.set_index('id', inplace=True)
+
+    debtpaying_data = get_debtpaying_data(year, quarter)
+    debtpaying_data.set_index('id', inplace=True)
+
+    cashflow_data = get_cashflow_data(year, quarter)
+    cashflow_data.set_index('id', inplace=True)
+
+    df = report_data.join([profit_data, operation_data, growth_data, debtpaying_data, cashflow_data])
+    df.reset_index(level=0, inplace=True)
+    return df
+
+
 def get_report_data(year, quarter):
     """
         获取业绩报表数据
@@ -60,7 +94,7 @@ def get_report_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         eps,每股收益
         eps_yoy,每股收益同比(%)
@@ -69,14 +103,17 @@ def get_report_data(year, quarter):
         epcf,每股现金流量(元)
         net_profits,净利润(万元)
         profits_yoy,净利润同比(%)
-        distrib,分配方案
+        ## distrib,分配方案
         report_date,发布日期
     """
     if ct._check_input(year,quarter) is True:
         ct._write_head()
         df =  _get_report_data(year, quarter, 1, pd.DataFrame())
         if df is not None:
-            df = df.drop_duplicates('code')
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name', 'distrib'], axis=1, inplace=True)
+            df['roe'] = df['roe'].astype(float)
         return df
 
 
@@ -95,6 +132,8 @@ def _get_report_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        ## add by hecor
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df = df.drop(11, axis=1)
         df.columns = ct.REPORT_COLS
@@ -121,7 +160,7 @@ def get_profit_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         roe,净资产收益率(%)
         net_profit_ratio,净利率(%)
@@ -133,10 +172,12 @@ def get_profit_data(year, quarter):
     """
     if ct._check_input(year, quarter) is True:
         ct._write_head()
-        data =  _get_profit_data(year, quarter, 1, pd.DataFrame())
-        if data is not None:
-            data = data.drop_duplicates('code')
-        return data
+        df =  _get_profit_data(year, quarter, 1, pd.DataFrame())
+        if df is not None:
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name'], axis=1, inplace=True)
+        return df
 
 
 def _get_profit_data(year, quarter, pageNo, dataArr):
@@ -155,6 +196,7 @@ def _get_profit_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df.columns=ct.PROFIT_COLS
         dataArr = dataArr.append(df, ignore_index=True)
@@ -180,7 +222,7 @@ def get_operation_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         arturnover,应收账款周转率(次)
         arturndays,应收账款周转天数(天)
@@ -191,10 +233,12 @@ def get_operation_data(year, quarter):
     """
     if ct._check_input(year, quarter) is True:
         ct._write_head()
-        data =  _get_operation_data(year, quarter, 1, pd.DataFrame())
-        if data is not None:
-            data = data.drop_duplicates('code')
-        return data
+        df =  _get_operation_data(year, quarter, 1, pd.DataFrame())
+        if df is not None:
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name'], axis=1, inplace=True)
+        return df
 
 
 def _get_operation_data(year, quarter, pageNo, dataArr):
@@ -213,6 +257,7 @@ def _get_operation_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df.columns=ct.OPERATION_COLS
         dataArr = dataArr.append(df, ignore_index=True)
@@ -238,7 +283,7 @@ def get_growth_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         mbrg,主营业务收入增长率(%)
         nprg,净利润增长率(%)
@@ -249,10 +294,12 @@ def get_growth_data(year, quarter):
     """
     if ct._check_input(year, quarter) is True:
         ct._write_head()
-        data =  _get_growth_data(year, quarter, 1, pd.DataFrame())
-        if data is not None:
-            data = data.drop_duplicates('code')
-        return data
+        df =  _get_growth_data(year, quarter, 1, pd.DataFrame())
+        if df is not None:
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name'], axis=1, inplace=True)
+        return df
 
 
 def _get_growth_data(year, quarter, pageNo, dataArr):
@@ -271,6 +318,7 @@ def _get_growth_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df.columns=ct.GROWTH_COLS
         dataArr = dataArr.append(df, ignore_index=True)
@@ -296,7 +344,7 @@ def get_debtpaying_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         currentratio,流动比率
         quickratio,速动比率
@@ -309,7 +357,9 @@ def get_debtpaying_data(year, quarter):
         ct._write_head()
         df =  _get_debtpaying_data(year, quarter, 1, pd.DataFrame())
         if df is not None:
-            df = df.drop_duplicates('code')
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name'], axis=1, inplace=True)
         return df
 
 
@@ -329,6 +379,7 @@ def _get_debtpaying_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df.columns = ct.DEBTPAYING_COLS
         dataArr = dataArr.append(df, ignore_index=True)
@@ -354,7 +405,7 @@ def get_cashflow_data(year, quarter):
     Return
     --------
     DataFrame
-        code,代码
+        id,代码
         name,名称
         cf_sales,经营现金净流量对销售收入比率
         rateofreturn,资产的经营现金流量回报率
@@ -366,7 +417,9 @@ def get_cashflow_data(year, quarter):
         ct._write_head()
         df =  _get_cashflow_data(year, quarter, 1, pd.DataFrame())
         if df is not None:
-            df = df.drop_duplicates('code')
+            df = df.drop_duplicates('id')
+            df['id'] = df['id'].apply(normalize_id)
+            df.drop(['name'], axis=1, inplace=True)
         return df
 
 
@@ -386,6 +439,7 @@ def _get_cashflow_data(year, quarter, pageNo, dataArr):
             sarr = [etree.tostring(node) for node in res]
         sarr = ''.join(sarr)
         sarr = '<table>%s</table>'%sarr
+        sarr = sarr.replace('--', NONE_REPLACEMENT)
         df = pd.read_html(sarr)[0]
         df.columns = ct.CASHFLOW_COLS
         dataArr = dataArr.append(df, ignore_index=True)
